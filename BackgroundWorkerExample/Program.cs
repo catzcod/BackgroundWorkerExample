@@ -30,6 +30,28 @@ namespace BackgroundWorkerExample
         private System.Windows.Forms.Label resultLabel;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
 
+        private class WorkerArguments
+        {
+            public int Arg1 { get; set; }
+            public int Arg2 { get; set; }
+            public WorkerArguments(int a1, int a2)
+            {
+                Arg1 = a1;
+                Arg2 = a2;
+            }
+        }
+
+        private class WorkerResults
+        {
+            public long Res1 { get; set; }
+            public long Res2 { get; set; }
+            public WorkerResults(long r1, long r2)
+            {
+                Res1 = r1;
+                Res2 = r2;
+            }
+        }
+
         public FibonacciForm()
         {
             InitializeComponent();
@@ -64,12 +86,14 @@ namespace BackgroundWorkerExample
 
             // Get the value from the UpDown control.
             numberToCompute = (int)numericUpDown1.Value;
+            int half1 = numberToCompute / 2;
+            int half2 = numberToCompute - half1;
 
             // Reset the variable for percentage tracking.
             highestPercentageReached = 0;
 
             // Start the asynchronous operation.
-            backgroundWorker1.RunWorkerAsync(numberToCompute);
+            backgroundWorker1.RunWorkerAsync(new WorkerArguments(half1, half2));
         }
 
         private void cancelAsyncButton_Click(System.Object sender, System.EventArgs e)
@@ -92,7 +116,10 @@ namespace BackgroundWorkerExample
             // to the Result property of the DoWorkEventArgs
             // object. This is will be available to the 
             // RunWorkerCompleted eventhandler.
-            e.Result = ComputeFibonacci((int)e.Argument, worker, e);
+            long fib = ComputeFibonacci(((WorkerArguments)(e.Argument)).Arg1 + ((WorkerArguments)(e.Argument)).Arg2, worker, e);
+            long half1 = fib / 2;
+            long half2 = fib - half1;
+            e.Result = new WorkerResults(half1, half2);
         }
 
         // This event handler deals with the results of the
@@ -118,7 +145,7 @@ namespace BackgroundWorkerExample
             {
                 // Finally, handle the case where the operation 
                 // succeeded.
-                resultLabel.Text = e.Result.ToString();
+                resultLabel.Text = (((WorkerResults)e.Result).Res1 + ((WorkerResults)e.Result).Res2).ToString();
             }
 
             // Enable the UpDown control.
@@ -203,7 +230,7 @@ namespace BackgroundWorkerExample
             // numericUpDown1
             // 
             this.numericUpDown1.Location = new System.Drawing.Point(16, 16);
-            this.numericUpDown1.Maximum = new System.Decimal(new int[] { 91, 0, 0, 0 });
+            this.numericUpDown1.Maximum = new System.Decimal(new int[] { 92, 0, 0, 0 });
             this.numericUpDown1.Minimum = new System.Decimal(new int[] { 1, 0, 0, 0 });
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(80, 20);
